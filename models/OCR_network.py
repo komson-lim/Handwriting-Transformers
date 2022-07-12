@@ -6,6 +6,7 @@ import torch
 from .networks import *
 from params import *
 
+
 class BidirectionalLSTM(nn.Module):
 
     def __init__(self, nIn, nHidden, nOut):
@@ -13,7 +14,6 @@ class BidirectionalLSTM(nn.Module):
 
         self.rnn = nn.LSTM(nIn, nHidden, bidirectional=True)
         self.embedding = nn.Linear(nHidden * 2, nOut)
-
 
     def forward(self, input):
         recurrent, _ = self.rnn(input)
@@ -40,7 +40,7 @@ class CRNN(nn.Module):
 
         cnn = nn.Sequential()
         nh = 256
-        dealwith_lossnone=False # whether to replace all nan/inf in gradients to zero
+        dealwith_lossnone = False  # whether to replace all nan/inf in gradients to zero
 
         def convRelu(i, batchNormalization=False):
             nIn = 1 if i == 0 else nm[i - 1]
@@ -64,7 +64,7 @@ class CRNN(nn.Module):
         cnn.add_module('pooling{0}'.format(2),
                        nn.MaxPool2d((2, 2), (2, 1), (0, 1)))  # 256x4x16
         convRelu(4, True)
-        if resolution==63:
+        if resolution == 63:
             cnn.add_module('pooling{0}'.format(3),
                            nn.MaxPool2d((2, 2), (2, 1), (0, 1)))  # 256x4x16
         convRelu(5)
@@ -85,17 +85,17 @@ class CRNN(nn.Module):
         if dealwith_lossnone:
             self.register_backward_hook(self.backward_hook)
 
-        self.device = torch.device('cuda:{}'.format(0)) 
+        self.device = torch.device('cuda:{}'.format(0))
         self.init = 'N02'
         # Initialize weights
-        
+
         self = init_weights(self, self.init)
 
     def forward(self, input):
         # conv features
         conv = self.cnn(input)
         b, c, h, w = conv.size()
-        if h!=1:
+        if h != 1:
             print('a')
         assert h == 1, "the height of conv must be 1"
         conv = conv.squeeze(2)
@@ -300,5 +300,3 @@ class strLabelConverter(object):
                         t[index:index + l], torch.IntTensor([l]), raw=raw))
                 index += l
             return texts
-
-
